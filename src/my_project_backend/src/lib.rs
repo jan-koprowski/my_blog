@@ -1,22 +1,26 @@
 use std::cell::RefCell;
 
+use crate::blog::Blog;
+
 mod blog;
 
 thread_local! {
-    static BLOGS: RefCell<Vec<String>> = RefCell::new(Vec::new());
+    static BLOGS: RefCell<Vec<Blog>> = RefCell::new(Vec::new());
 }
-// Title
-// Data
-// Tagi
 // Komentarze
 
 #[ic_cdk::update]
-fn add_blog(new_blog: String) {
-    BLOGS.with(|blogs| blogs.borrow_mut().push(new_blog));
+fn add_blog(title: String, content: String, tags: Vec<String>) -> Result<String, String> {
+    if title.len() > 250 {
+        return Err("Title is too long!".to_string())
+    }
+    let blog = Blog::new(title, content, tags);
+    BLOGS.with(|blogs| blogs.borrow_mut().push(blog));
+    Ok("Added new blog".to_string())
 }
 
 #[ic_cdk::query]
-fn get_blogs() -> Vec<String> {
+fn get_blogs() -> Vec<Blog> {
     BLOGS.with(|blogs| blogs.borrow().clone())
 }
 
